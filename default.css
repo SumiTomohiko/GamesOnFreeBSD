@@ -1,23 +1,40 @@
 
+body {
+    margin: 0px;
+    padding: 0px;
+    width: 100%;
+}
+
+div.main {
+    padding: 5px;
+}
+
 span.ports {
     color: green;
     font-family: monospace;
 }
 
-header {
-    padding: 10px;
-    position: absolute;
+header, footer {
+    background-color: pink;
+    padding-bottom: 5px;
+    padding-top: 5px;
     text-align: center;
+    width: 100%;
+}
+
+header {
     top: 0px;
-    width: 90%;
 }
 
 footer {
     bottom: 0px;
-    padding: 10px;
     position: absolute;
-    text-align: center;
-    width: 90%;
+}
+
+header > a, footer > a {
+    color: dimgray;
+    font-weight: bold;
+    text-decoration: none;
 }
 
 /**
