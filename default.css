@@ -4,6 +4,14 @@ span.ports {
     font-family: monospace;
 }
 
+header {
+    padding: 10px;
+    position: absolute;
+    text-align: center;
+    top: 0px;
+    width: 90%;
+}
+
 footer {
     bottom: 0px;
     padding: 10px;
