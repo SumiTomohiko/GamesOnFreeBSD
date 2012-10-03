@@ -4,6 +4,14 @@ span.ports {
     font-family: monospace;
 }
 
+footer {
+    bottom: 0px;
+    padding: 10px;
+    position: absolute;
+    text-align: center;
+    width: 90%;
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
  */
