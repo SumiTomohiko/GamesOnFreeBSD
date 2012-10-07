@@ -1,0 +1,206 @@
+<!doctype html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII"/>
+<link href="default.css" rel="stylesheet"/>
+<title>Screencasting on FreeBSD</title>
+</head>
+<body>
+<header><a href="index.html">Games On FreeBSD</a></header>
+<div class="main">
+  <h1>Screencasting on FreeBSD</h1>
+  <p>I describe how to screencast on FreeBSD 9.0/amd64 in this page.</p>
+  <p>Screencasting can be devided two things. One is video recording, another is
+  audio recording. The tool is <a href="http://ffmpeg.org/">ffmpeg</a> 1.0.</p>
+  <section>
+    <h1>Video Recording</h1>
+    <p>ffmpeg cannot record video of only one window. So I must give absolute
+    position and size of the target window to ffmpeg. You can know this with
+    <code>xwininfo</code> and clicking the target window.</p>
+    <pre>$ xwininfo
+</pre>
+    <p>This command may tell you about the parent window. You can know the
+    children of it with <code>-children</code> option.</p>
+    <pre>$ xwininfo -children
+</pre>
+    <p>This will tell you children windows' id. Please pass the target window's
+    id to <code>xwininfo</code> with <code>-id</code> option.</p>
+    <pre>$ xwininfo -id <var>windowid</var>
+</pre>
+    <p>After this step, you will get outputs like;</p>
+    <pre> 
+xwininfo: Window id: 0x800001 &quot;mlterm&quot;
+
+  Absolute upper-left X:  5
+  Absolute upper-left Y:  39
+  Relative upper-left X:  4
+  Relative upper-left Y:  38
+  Width: 898
+  Height: 676
+  Depth: 24
+  Visual: 0x21
+  Visual Class: TrueColor
+  Border width: 1
+  Class: InputOutput
+  Colormap: 0x20 (installed)
+  Bit Gravity State: ForgetGravity
+  Window Gravity State: NorthWestGravity
+  Backing Store State: NotUseful
+  Save Under State: no
+  Map State: IsViewable
+  Override Redirect State: no
+  Corners:  +5+39  -375+39  -375-307  +5-307
+  -geometry 80x24+0+0
+
+</pre>
+    <p>What screencasting needs are;</p>
+    <ul>
+      <li>Absolute upper-left X (5 in case of the above example)</li>
+      <li>Absolute upper-left Y (39 in case of the above example)</li>
+      <li>Width (898 in case of the above example)</li>
+      <li>Height (676 in case of the above example)</li>
+      <li>Border width (1 in case of the above example)</li>
+    </ul>
+    <p>ffmpeg can know the region to record with <code>-s</code> and offset of
+    <code>-i</code> option.</p>
+    <pre>$ ffmpeg -f x11grab -s 898x676 -i :0.0+6,40 foo.avi
+</pre>
+    <p>You must remember that upper-left X/Y are values of the border. The
+    window itself is in the border. So X of exact window position is
+    <code><var>Absolute upper-left X</var> + <var>Border width</var></code>, Y
+    is <code><var>Absolute upper-left Y</var> + <var>Border width</var></code>.
+    </p>
+    <p><code>-f x11grab</code> indicates screencasting of X.</p>
+    <p>Moreover, I add options about quolity and so on. My final form of the
+    command recording video is;</p>
+    <pre>$ ffmpeg -f x11grab -s 898x676 -i :0.0+6,40 -sameq -y -r 30 foo.avi
+</pre>
+    <p>When actual screencasting, I start a game, and remember that position.
+    But I do not <code>ffmpeg</code> immediately. I start <code>ffmpeg</code>
+    after closing the game once. I re-execute the game at the next of
+    <code>ffmpeg</code>. By this way, I can record not only the game itself, but
+    also command inputting in a terminal.</p>
+  </section>
+  <section>
+    <h1>Audio Recording</h1>
+    <div class="notice">
+      <p>I do not understand audio on FreeBSD well (&quot;OSS? PulseAudio?
+      ALSA?&quot;). I might tell you wrong ways.</p>
+    </div>
+    <p>There are two ways. One is for the process using PulseAudio. Another way
+    uses line-out and line-in of the sound card. It is analog.</p>
+    <section>
+      <h1>PulseAudio</h1>
+      <p>If you find the application in outputs of <code>pactl list</code>,</p>
+      <pre>Client #1
+	Driver: protocol-native.c
+	Owner Module: 11
+	Properties:
+		application.name = &quot;SuperTux 0.1.3&quot;
+		native-protocol.peer = &quot;UNIX socket client&quot;
+		native-protocol.version = &quot;16&quot;
+		application.process.id = &quot;7033&quot;
+		application.process.user = &quot;tom&quot;
+		application.process.host = &quot;linderhof.local&quot;
+		application.process.binary = &quot;supertux&quot;
+		application.language = &quot;C&quot;
+		window.x11.display = &quot;:0&quot;
+		application.process.machine_id = &quot;linderhof.local&quot;
+</pre>
+      <p>It uses PulseAudio. In this case, the form of ffmpeg is;</p>
+      <pre>$ ffmpeg -f pulse -i oss_output.dsp0.monitor foo.wav
+</pre>
+    </section>
+    <section>
+      <h1>Line-out to Line-in</h1>
+      <p>When I google'ed about audio recording in OSS, I found many people
+      saying to start <code>ffmpeg -f oss -i /dev/dsp foo.wav</code> before
+      starting the application. But I could not record in this way (I do not
+      know why). So I tried very analog way -- connecting line-out with line-in
+      of the sound card. But, this way also did not work. Finally, I used one
+      more analog way -- connecting line-out with a USB sound device.</p>
+      <p>When I inserted the USB device, <code>dmesg</code> told;</p>
+      <pre>ugen1.3: &lt;vendor 0x0d8c&gt; at usbus1
+uaudio0: &lt;vendor 0x0d8c Generic USB Audio Device, class 0/0, rev 1.10/1.00, addr 3&gt; on usbus1
+uaudio0: Play: 48000 Hz, 2 ch, 16-bit S-LE PCM format
+uaudio0: Record: 48000 Hz, 1 ch, 16-bit S-LE PCM format
+uaudio0: No midi sequencer
+pcm5: &lt;USB audio&gt; on uaudio0
+uhid2: &lt;vendor 0x0d8c Generic USB Audio Device, class 0/0, rev 1.10/1.00, addr 3&gt; on usbus1
+</pre>
+      <p>And <code>/dev/sndstat</code> said;</p>
+      <pre>$ cat /dev/sndstat
+FreeBSD Audio Driver (newpcm: 64bit 2009061500/amd64)
+Installed devices:
+pcm0: &lt;HDA Realtek ALC887 PCM #0 Analog&gt; (play/rec) default
+pcm1: &lt;HDA Realtek ALC887 PCM #1 Analog&gt; (play/rec)
+pcm2: &lt;HDA Realtek ALC887 PCM #2 Digital&gt; (play)
+pcm3: &lt;HDA Realtek ALC887 PCM #3 Digital&gt; (play)
+pcm4: &lt;HDA Intel (Unknown) PCM #0 DisplayPort&gt; (play)
+pcm5: &lt;USB audio&gt; (play/rec)
+</pre>
+      <p>Moreover, I knew the following information from <code>sysctl</code>
+      (<code>5</code> came from pcm number of the USB device);</p>
+      <pre>$ sysctl -a | grep -w pcm.5
+dev.pcm.5.%desc: USB audio
+dev.pcm.5.%driver: pcm
+dev.pcm.5.%parent: uaudio0
+dev.pcm.5.play.vchans: 1
+dev.pcm.5.play.vchanmode: fixed
+dev.pcm.5.play.vchanrate: 48000
+dev.pcm.5.play.vchanformat: s16le:2.0
+dev.pcm.5.rec.vchans: 1
+dev.pcm.5.rec.vchanmode: fixed
+dev.pcm.5.rec.vchanrate: 48000
+dev.pcm.5.rec.vchanformat: s16le:2.0
+dev.pcm.5.buffersize: 0
+dev.pcm.5.bitperfect: 0
+</pre>
+      <p><code>mixer</code> show that microphone level is zero.</p>
+      <pre>$ mixer -f /dev/mixer5
+Mixer vol      is currently set to  75:75
+Mixer pcm      is currently set to  75:75
+Mixer mic      is currently set to   0:0
+Recording source: mic
+</pre>
+      <p>Because of it, I must set this non-zero.</p>
+      <pre>$ mixer -f /dev/mixer5 mic 15
+Setting the mixer mic from 0:0 to 15:15.
+</pre>
+      <p>The steps to here were difficult, but the command to ffmpeg is simple.</p>
+      <pre>$ ffmpeg -f oss -ac 2 -i /dev/dsp5 foo.wav
+</pre>
+      <p>This is analog way, so you will notice that <code>foo.wav</code>
+      includes a little noise. Analog ways cannot escape from noise essentially.
+      So <a href="http://uncyclopedia.wikia.com/wiki/Nobody_cares">I do not care
+      </a>.</p>
+      <p>And I found that the sound delays a little to video in combining. I did
+      not find solutions for this problem. The screencast of
+      <a href="xgalaga/index.html">XGalaga</a> was recorded with this method.
+      You also may notice delay.</p>
+    </section>
+  </section>
+  <section>
+    <h1>Combining Video with Audio</h1>
+    <p>The last step is combining video recording command with that for audio.
+    If the application uses PulseAudio, the command is like;</p>
+    <pre>$ ffmpeg -f pulse -i oss_output.dsp0.monitor -f x11grab -s 898x676 -i :0.0+6,40 -sameq -y -r 30 screencast.avi
+</pre>
+    <p>In the case of analog;</p>
+    <pre>$ ffmpeg -f oss -i /dev/dsp5 -f x11grab -s 898x676 -i :0.0+6,40 -sameq -y -r 30 screencast.avi
+</pre>
+  </section>
+  <section>
+    <h1>Hardware I Use</h1>
+    <table>
+      <tr><td>Motherboard</td><td>ASUS P8H77-M</td></tr>
+      <tr><td>CPU</td><td>Intel Celeron G540, 2.50GHz, 2MB Cache</td></tr>
+      <tr><td>Memory</td><td>2GBytes x 2 (4GBytes)</td></tr>
+    </table>
+  </section>
+</div>
+</body>
+</html>
+<!--
+vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
+-->
