@@ -26,11 +26,6 @@ header {
     top: 0px;
 }
 
-footer {
-    bottom: 0px;
-    position: absolute;
-}
-
 header > a, footer > a {
     color: dimgray;
     font-weight: bold;
