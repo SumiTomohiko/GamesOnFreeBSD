@@ -32,6 +32,10 @@ header > a, footer > a {
     text-decoration: none;
 }
 
+figure {
+    text-align: center;
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
  */
