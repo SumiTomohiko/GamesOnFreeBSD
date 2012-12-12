@@ -32,8 +32,30 @@ header > a, footer > a {
     text-decoration: none;
 }
 
+aside {
+    border-style: solid;
+    margin: 16px;
+    padding: 0px 8px;
+}
+
+p {
+    margin: 8px 0px;
+}
+
 figure {
     text-align: center;
+}
+
+div.main > h1 {
+    text-align: center;
+}
+
+section > h1 {
+    border-bottom-style: solid;
+}
+
+section {
+    margin: 16px 0px;
 }
 
 /**
