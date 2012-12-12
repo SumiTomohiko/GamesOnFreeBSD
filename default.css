@@ -38,8 +38,9 @@ aside {
     padding: 0px 8px;
 }
 
-p {
+p, pre {
     margin: 8px 0px;
+    padding: 4px 16px;
 }
 
 figure {
@@ -56,6 +57,10 @@ section > h1 {
 
 section {
     margin: 16px 0px;
+}
+
+td {
+    padding: 2px 24px 2px 2px;  /* top right bottom left */
 }
 
 /**
