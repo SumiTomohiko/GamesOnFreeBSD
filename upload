@@ -1,0 +1,20 @@
+#!/bin/sh
+
+. "server.conf"
+
+src="
+BillardGL
+abuse
+default.css
+index.html
+screencasting.html
+supertux
+syobon
+usb-sound-device.jpg
+xgalaga
+xgalaga++
+"
+
+rsync -av --delete --exclude "*.ass" --exclude "*.avi" --exclude Makefile ${src} ${dest}
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2
