@@ -38,9 +38,14 @@ aside {
     padding: 0px 8px;
 }
 
-p, pre {
+p {
     margin: 8px 0px;
     padding: 4px 16px;
+}
+
+pre {
+    border-style: solid;
+    padding: 8px;
 }
 
 figure {
